@@ -1,0 +1,98 @@
+[
+  {
+    "cwe_id": "CWE-89",
+    "name": "SQL Injection",
+    "description": "Untrusted input concatenated into SQL queries. Indicators: '+' or f-strings in query strings, raw execute() calls. Flask/Django context: db.session.execute(query), cursor.execute(query).",
+    "severity": "Critical",
+    "remediation": "Use parameterized queries, SQLAlchemy ORM, or Django QuerySet. Never use string interpolation for database calls.",
+    "indicators": ["db.session.execute", "cursor.execute", "query.run", "execSQL", ".execute(", "f\"SELECT", "+\"SELECT"]
+  },
+  {
+    "cwe_id": "CWE-79",
+    "name": "Cross-Site Scripting (XSS)",
+    "description": "Untrusted input rendered in UI without proper escaping. Indicators: render_template_string(), SafeString(), |safe filter in Jinja2, or returning raw HTML strings in Flask.",
+    "severity": "High",
+    "remediation": "Use Jinja2 auto-escaping (default in render_template). Avoid |safe and render_template_string with user input. Use Flask-Talisman for CSP.",
+    "indicators": ["render_template_string", "|safe", "Markup(", "res.write", "Markup.escape"]
+  },
+  {
+    "cwe_id": "CWE-94",
+    "name": "Server-Side Template Injection (SSTI)",
+    "description": "User input processed by template engine. Indicators: render_template_string() in Flask where input contains {{ }}. Attacker can execute arbitrary code via template context.",
+    "severity": "Critical",
+    "remediation": "Never pass user input directly to render_template_string. Use static template files (render_template) with context variables.",
+    "indicators": ["render_template_string", "Template(", ".render("]
+  },
+  {
+    "cwe_id": "CWE-78",
+    "name": "OS Command Injection",
+    "description": "Executing system commands using untrusted input. Indicators: os.system(), subprocess.Popen(shell=True), subprocess.call(), or call().",
+    "severity": "Critical",
+    "remediation": "Use subprocess.run() with shell=False and pass arguments as a list. Avoid os.system and shell=True.",
+    "indicators": ["os.system", "subprocess.Popen", "subprocess.call", "shell=True", "os.popen"]
+  },
+  {
+    "cwe_id": "CWE-22",
+    "name": "Path Traversal",
+    "description": "Accessing files outside intended directory using '../'. Indicators: open(), os.path.join() with untrusted input, send_from_directory() without absolute path check.",
+    "severity": "High",
+    "remediation": "Use werkzeug.utils.secure_filename(). Validate path with os.path.abspath and check prefix.",
+    "indicators": ["open(", "os.path.join", "send_from_directory", "send_file", "filepath"]
+  },
+  {
+    "cwe_id": "CWE-502",
+    "name": "Insecure Deserialization",
+    "description": "Untrusted data deserialized into objects. Indicators: pickle.load(), yaml.load() (without SafeLoader), or marshal.loads().",
+    "severity": "Critical",
+    "remediation": "Avoid pickle with untrusted data. Use yaml.safe_load() or JSON for data exchange.",
+    "indicators": ["pickle.load", "pickle.loads", "yaml.load", "marshal.loads", "unpickle"]
+  },
+  {
+    "cwe_id": "CWE-798",
+    "name": "Hardcoded Credentials",
+    "description": "Embedding passwords, keys, or Flask SECRET_KEY in source code. Indicators: app.config['SECRET_KEY'] = 'fixed_string', passwords in code.",
+    "severity": "High",
+    "remediation": "Use environment variables or a manager. Rotate keys regularly.",
+    "indicators": ["SECRET_KEY", "password =", "api_key =", "token =", "AWS_SECRET"]
+  },
+  {
+    "cwe_id": "CWE-200",
+    "name": "Information Exposure via Debug Mode",
+    "description": "Flask/Django debug mode enabled in production. Indicators: app.run(debug=True), DEBUG = True in config. Reveals stack traces and environment variables.",
+    "severity": "High",
+    "remediation": "Set debug=False in production. Use environment-specific configuration files.",
+    "indicators": ["debug=True", "DEBUG=True", "DEVELOPMENT=True"]
+  },
+  {
+    "cwe_id": "CWE-1004",
+    "name": "Cookie Without 'HttpOnly' Flag",
+    "description": "Session cookies are accessible via JavaScript. Indicator: SESSION_COOKIE_HTTPONLY = False or not set in Flask config.",
+    "severity": "Low",
+    "remediation": "Set SESSION_COOKIE_HTTPONLY = True in Flask settings.",
+    "indicators": ["SESSION_COOKIE_HTTPONLY", "set_cookie"]
+  },
+  {
+    "cwe_id": "CWE-614",
+    "name": "Cookie Without 'Secure' Flag",
+    "description": "Session cookies sent over unencrypted HTTP. Indicator: SESSION_COOKIE_SECURE = False or not set in Flask config.",
+    "severity": "Low",
+    "remediation": "Set SESSION_COOKIE_SECURE = True in Flask settings and use HTTPS.",
+    "indicators": ["SESSION_COOKIE_SECURE", "set_cookie"]
+  },
+  {
+    "cwe_id": "CWE-384",
+    "name": "Session Fixation",
+    "description": "Not regenerating session ID after login. Indicator: Flask login without session.clear() or session.permanent=True management.",
+    "severity": "Medium",
+    "remediation": "Use Flask-Login's login_user() which handles session regeneration, or call session.clear() manually before login.",
+    "indicators": ["session.clear", "login_user", "session.permanent"]
+  },
+  {
+    "cwe_id": "CWE-327",
+    "name": "Broken Cryptography",
+    "description": "Using weak crypto (MD5, SHA1). Indicators: hashlib.md5(), hashlib.sha1() for passwords.",
+    "severity": "Medium",
+    "remediation": "Use bcrypt, Argon2, or PBKDF2 for password hashing.",
+    "indicators": ["hashlib.md5", "hashlib.sha1", "crypt.crypt"]
+  }
+]

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Architecture Overview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #F4F5F7;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 36px 16px 56px;
+        }
+
+        .page {
+            width: 1100px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 2px 32px rgba(0, 0, 0, 0.09);
+            padding: 36px 36px 44px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 21px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 5px;
+            letter-spacing: -0.3px;
+        }
+
+        p.sub {
+            text-align: center;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        svg text {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <h1>Project Architecture Overview</h1>
+        <p class="sub">Flask 3 · Celery · Redis · MongoDB · S3 · Groq · Gemini · Claude Sonnet 3.5 · GitHub API</p>
+
+        <!--
+VERIFIED BOX EXTENTS (x-left, x-right, y-top, y-bottom):
+  ReactSPA:    80-250,   30-84
+  WSClient:    700-900,  30-84
+  FlaskAPI:    270-690,  132-176
+  Redis7:      22-170,   222-294
+  Celery5:     200-338,  222-294
+  WorkerPool:  372-532,  222-294
+  CeleryBeat:  566-704,  222-294
+  WSEmitter:   738-878,  222-294
+  Fetcher:     22-152,   348-412
+  Scanner:     192-316,  362-406
+  TriageEng:   344-482,  362-406
+  SeverityCls: 232-402,  434-478
+  PromptBld:   566-714,  362-406
+  SuggProc:    748-944,  362-406
+  PatchPrep:   630-790,  434-478
+  ReportGen:   22-170,   548-628
+  Groq:        45-325,   698-756
+  Gemini:      360-640,  698-756
+  Claude:      675-955,  698-756
+  MongoDB:     80-340,   806-864
+  S3:          580-860,  806-864
+  GitHub:      300-610,  912-954
+
+GUTTERS (no box at these x/y values):
+  x=3  : only orange "report task" line
+  x=7  : only green lines ("raw data" y380-588, "fetch project info" y600-880)
+  x=15 : orange "scan task" y192-348, then blue "scan results" y412-640 (gap y348-412 between them)
+  x=342: gap between Groq(325) and Gemini(360)
+  x=657: gap between Gemini(640) and Claude(675)
+  y=192: above layer3 boxes (start y222), orange scan task horizontal
+  y=196: orange report task horizontal (above y=192 level)
+  y=640: below ReportGen(628), above AI section(678)
+  y=778: below AI boxes(756), above Storage(806)
+  y=880: below Storage(864), above External bg(894)
+-->
+
+        <svg width="100%" viewBox="0 0 1000 1080" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5"
+                    orient="auto-start-reverse">
+                    <path d="M1.5 1.5L8.5 5L1.5 8.5" fill="none" stroke="#1B8C5E" stroke-width="1.6"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                </marker>
+                <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5"
+                    orient="auto-start-reverse">
+                    <path d="M1.5 1.5L8.5 5L1.5 8.5" fill="none" stroke="#2563EB" stroke-width="1.6"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                </marker>
+                <marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5"
+                    orient="auto-start-reverse">
+                    <path d="M1.5 1.5L8.5 5L1.5 8.5" fill="none" stroke="#B86800" stroke-width="1.6"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                </marker>
+                <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5"
+                    orient="auto-start-reverse">
+                    <path d="M1.5 1.5L8.5 5L1.5 8.5" fill="none" stroke="#B91C1C" stroke-width="1.6"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                </marker>
+                <marker id="alb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5"
+                    orient="auto-start-reverse">
+                    <path d="M1.5 1.5L8.5 5L1.5 8.5" fill="none" stroke="#1D7FB8" stroke-width="1.6"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                </marker>
+            </defs>
+
+            <!-- ══════════════════════════════
+     SECTION BACKGROUNDS
+══════════════════════════════ -->
+            <rect x="10" y="10" width="980" height="96" rx="8" fill="#E6F4EE" stroke="#8ECBAE" stroke-width="1" />
+            <text x="20" y="26" font-size="9" font-weight="700" fill="#1A6640" letter-spacing="0.9">1. PRESENTATION
+                LAYER</text>
+
+            <rect x="10" y="118" width="980" height="72" rx="8" fill="#EDE9F8" stroke="#A89ADE" stroke-width="1" />
+            <text x="20" y="134" font-size="9" font-weight="700" fill="#3D2D8A" letter-spacing="0.9">2. API GATEWAY —
+                FLASK 3</text>
+
+            <rect x="10" y="202" width="980" height="106" rx="8" fill="#FEF3E2" stroke="#D4970A" stroke-width="1" />
+            <text x="20" y="218" font-size="9" font-weight="700" fill="#7A5500" letter-spacing="0.9">3. ASYNC TASK
+                LAYER</text>
+
+            <rect x="10" y="320" width="980" height="346" rx="8" fill="#EAF4E8" stroke="#85C580" stroke-width="1" />
+            <text x="20" y="336" font-size="9" font-weight="700" fill="#1A5E1A" letter-spacing="0.9">4. PROCESSING LAYER
+                — PYTHON 3.11</text>
+
+            <rect x="10" y="678" width="980" height="96" rx="8" fill="#FDECEA" stroke="#E8A090" stroke-width="1" />
+            <text x="20" y="694" font-size="9" font-weight="700" fill="#8C1A10" letter-spacing="0.9">5. AI ENGINE</text>
+
+            <rect x="10" y="786" width="980" height="96" rx="8" fill="#E1EEF8" stroke="#80B8E0" stroke-width="1" />
+            <text x="20" y="802" font-size="9" font-weight="700" fill="#0D3C6A" letter-spacing="0.9">6. STORAGE
+                LAYER</text>
+
+            <rect x="10" y="894" width="980" height="72" rx="8" fill="#F0F0F0" stroke="#BABABA" stroke-width="1" />
+            <text x="20" y="910" font-size="9" font-weight="700" fill="#444" letter-spacing="0.9">EXTERNAL
+                SERVICES</text>
+
+            <!-- ══════════════════════════════
+     LAYER 1
+══════════════════════════════ -->
+            <!-- ReactSPA: x80-250, y30-84 -->
+            <rect x="80" y="30" width="170" height="54" rx="7" fill="#1E9E6B" stroke="#157A52" stroke-width="1" />
+            <text x="165" y="61" text-anchor="middle" font-size="14" font-weight="600" fill="white">React SPA</text>
+
+            <!-- WSClient: x700-900, y30-84 -->
+            <rect x="700" y="30" width="200" height="54" rx="7" fill="#1E9E6B" stroke="#157A52" stroke-width="1" />
+            <text x="800" y="61" text-anchor="middle" font-size="14" font-weight="600" fill="white">WebSocket
+                Client</text>
+
+            <!-- ══════════════════════════════
+     LAYER 2
+══════════════════════════════ -->
+            <!-- FlaskAPI: x270-690, y132-176 -->
+            <rect x="270" y="132" width="420" height="44" rx="7" fill="#7C6BCE" stroke="#5B4BAE" stroke-width="1" />
+            <text x="480" y="159" text-anchor="middle" font-size="13" font-weight="600" fill="white">Flask 3 API ·
+                Flask-SocketIO · Gunicorn</text>
+
+            <!-- ══════════════════════════════
+     LAYER 3
+══════════════════════════════ -->
+            <!-- Redis7: x22-170, y222-294 -->
+            <rect x="22" y="222" width="148" height="72" rx="7" fill="#E07818" stroke="#B85E0A" stroke-width="1" />
+            <text x="96" y="252" text-anchor="middle" font-size="13" font-weight="600" fill="white">Redis 7</text>
+            <text x="96" y="270" text-anchor="middle" font-size="9.5" fill="#FFD8A8">Broker + Result Backend</text>
+
+            <!-- Celery5: x200-338, y222-294 -->
+            <rect x="200" y="222" width="138" height="72" rx="7" fill="#E07818" stroke="#B85E0A" stroke-width="1" />
+            <text x="269" y="264" text-anchor="middle" font-size="13" font-weight="600" fill="white">Celery 5</text>
+
+            <!-- WorkerPool: x372-532, y222-294 -->
+            <rect x="372" y="222" width="160" height="72" rx="7" fill="#E07818" stroke="#B85E0A" stroke-width="1" />
+            <text x="452" y="252" text-anchor="middle" font-size="13" font-weight="600" fill="white">Worker Pool
+                ×4</text>
+            <text x="452" y="270" text-anchor="middle" font-size="9.5" fill="#FFD8A8">Celery Workers</text>
+
+            <!-- CeleryBeat: x566-704, y222-294 -->
+            <rect x="566" y="222" width="138" height="72" rx="7" fill="#E07818" stroke="#B85E0A" stroke-width="1" />
+            <text x="635" y="252" text-anchor="middle" font-size="13" font-weight="600" fill="white">Celery Beat</text>
+            <text x="635" y="270" text-anchor="middle" font-size="9.5" fill="#FFD8A8">Scheduler</text>
+
+            <!-- WSEmitter: x738-878, y222-294 -->
+            <rect x="738" y="222" width="140" height="72" rx="7" fill="#E07818" stroke="#B85E0A" stroke-width="1" />
+            <text x="808" y="264" text-anchor="middle" font-size="13" font-weight="600" fill="white">WS Emitter</text>
+
+            <!-- ══════════════════════════════
+     LAYER 4
+══════════════════════════════ -->
+            <!-- Fetcher: x22-152, y348-412 -->
+            <rect x="22" y="348" width="130" height="64" rx="7" fill="#2E7D32" stroke="#1B5E20" stroke-width="1" />
+            <text x="87" y="385" text-anchor="middle" font-size="15" font-weight="700" fill="white">Fetcher</text>
+
+            <!-- Vuln Detection group: x180-520, y340-526 -->
+            <rect x="180" y="340" width="340" height="186" rx="7" fill="rgba(0,0,0,0.03)" stroke="#5E9E5A"
+                stroke-width="1" stroke-dasharray="5 3" />
+            <text x="350" y="356" text-anchor="middle" font-size="9" font-weight="700" fill="#2E5E2A"
+                letter-spacing="0.9">VULNERABILITY DETECTION</text>
+
+            <!-- Scanner: x192-316, y362-406 -->
+            <rect x="192" y="362" width="124" height="44" rx="7" fill="#4CAF50" stroke="#388E3C" stroke-width="1" />
+            <text x="254" y="389" text-anchor="middle" font-size="12" font-weight="600" fill="white">Scanner</text>
+
+            <!-- TriageEngine: x344-482, y362-406 -->
+            <rect x="344" y="362" width="138" height="44" rx="7" fill="#4CAF50" stroke="#388E3C" stroke-width="1" />
+            <text x="413" y="389" text-anchor="middle" font-size="12" font-weight="600" fill="white">Triage
+                Engine</text>
+
+            <!-- SeverityCls: x232-402, y434-478 -->
+            <rect x="232" y="434" width="170" height="44" rx="7" fill="#4CAF50" stroke="#388E3C" stroke-width="1" />
+            <text x="317" y="461" text-anchor="middle" font-size="12" font-weight="600" fill="white">Severity
+                Classifier</text>
+
+            <!-- AI-Driven Repair group: x554-972, y340-526 -->
+            <rect x="554" y="340" width="418" height="186" rx="7" fill="rgba(0,0,0,0.03)" stroke="#5E9E5A"
+                stroke-width="1" stroke-dasharray="5 3" />
+            <text x="763" y="356" text-anchor="middle" font-size="9" font-weight="700" fill="#2E5E2A"
+                letter-spacing="0.9">AI-DRIVEN REPAIR</text>
+
+            <!-- PromptBld: x566-714, y362-406 -->
+            <rect x="566" y="362" width="148" height="44" rx="7" fill="#4CAF50" stroke="#388E3C" stroke-width="1" />
+            <text x="640" y="389" text-anchor="middle" font-size="12" font-weight="600" fill="white">Prompt
+                Builder</text>
+
+            <!-- SuggProc: x748-944, y362-406 -->
+            <rect x="748" y="362" width="196" height="44" rx="7" fill="#4CAF50" stroke="#388E3C" stroke-width="1"
+                stroke-dasharray="5 3" />
+            <text x="846" y="389" text-anchor="middle" font-size="12" font-weight="600" fill="white">Suggestion
+                Proc.</text>
+
+            <!-- PatchPrep: x630-790, y434-478 -->
+            <rect x="630" y="434" width="160" height="44" rx="7" fill="#4CAF50" stroke="#388E3C" stroke-width="1" />
+            <text x="710" y="461" text-anchor="middle" font-size="12" font-weight="600" fill="white">Patch
+                Preparer</text>
+
+            <!-- ReportGen: x22-170, y548-628 -->
+            <rect x="22" y="548" width="148" height="80" rx="7" fill="#2E7D32" stroke="#1B5E20" stroke-width="1.5"
+                stroke-dasharray="6 3" />
+            <text x="96" y="583" text-anchor="middle" font-size="13" font-weight="600" fill="white">Report</text>
+            <text x="96" y="601" text-anchor="middle" font-size="13" font-weight="600" fill="white">Generator</text>
+
+            <!-- ══════════════════════════════
+     LAYER 5 — 3 AI BOXES EVENLY SPACED
+     Groq:   x45-325  cx=185
+     Gemini: x360-640 cx=500
+     Claude: x675-955 cx=815
+══════════════════════════════ -->
+            <!-- Groq: x45-325, y698-756 -->
+            <rect x="45" y="698" width="280" height="58" rx="7" fill="#C0392B" stroke="#962D22" stroke-width="1" />
+            <text x="185" y="733" text-anchor="middle" font-size="13" font-weight="600" fill="white">Groq API</text>
+
+            <!-- Gemini: x360-640, y698-756 -->
+            <rect x="360" y="698" width="280" height="58" rx="7" fill="#C0392B" stroke="#962D22" stroke-width="1" />
+            <text x="500" y="733" text-anchor="middle" font-size="13" font-weight="600" fill="white">Gemini API</text>
+
+            <!-- Claude: x675-955, y698-756 -->
+            <rect x="675" y="698" width="280" height="58" rx="7" fill="#C0392B" stroke="#962D22" stroke-width="1" />
+            <text x="815" y="727" text-anchor="middle" font-size="13" font-weight="600" fill="white">Claude Sonnet
+                3.5</text>
+            <text x="815" y="747" text-anchor="middle" font-size="9.5" fill="#FFBCB8">Anthropic</text>
+
+            <!-- ══════════════════════════════
+     LAYER 6
+══════════════════════════════ -->
+            <!-- MongoDB: x80-340, y806-864 -->
+            <rect x="80" y="806" width="260" height="58" rx="7" fill="#2980B9" stroke="#1A6090" stroke-width="1" />
+            <text x="210" y="840" text-anchor="middle" font-size="13" font-weight="600" fill="white">MongoDB</text>
+
+            <!-- S3: x580-860, y806-864 -->
+            <rect x="580" y="806" width="280" height="58" rx="7" fill="#2980B9" stroke="#1A6090" stroke-width="1" />
+            <text x="720" y="840" text-anchor="middle" font-size="13" font-weight="600" fill="white">Object Storage
+                (S3)</text>
+
+            <!-- ══════════════════════════════
+     EXTERNAL SERVICES
+══════════════════════════════ -->
+            <!-- GitHub: x300-610, y912-954 -->
+            <rect x="300" y="912" width="310" height="42" rx="7" fill="#909090" stroke="#707070" stroke-width="1" />
+            <text x="455" y="938" text-anchor="middle" font-size="12" font-weight="600" fill="white">GitHub REST API
+                v3</text>
+
+            <!-- ══════════════════════════════════════════════════════
+     CONNECTORS  —  all coordinates verified collision-free
+     
+     Left gutter assignments (x values):
+       x=3  → ONLY orange "report task"
+       x=7  → ONLY green ("raw data" y380-588, "fetch project info" y600-880)
+       x=15 → orange "scan task" y192-348 | blue "scan results" y412-640 (no overlap: gap y348-412)
+     
+     Right gutter: x=657 (between Gemini right=640 and Claude left=675) — only blue PDF reports
+     
+     Horizontal gutters:
+       y=192 → orange scan task horizontal
+       y=196 → orange report task horizontal  (these two are 4px apart, different lines)
+       y=640 → blue structured prompts + blue scan results (same colour — OK)
+       y=778 → light-blue storage write (x185-210) + blue PDF reports (x657-720)  [non-overlapping x ranges]
+       y=880 → green fetch project info horizontal
+══════════════════════════════════════════════════════ -->
+
+            <!-- ─────────────────────────────
+     GREEN: WS / REST
+───────────────────────────── -->
+
+            <!-- React SPA → Flask API  (REST calls JWT)
+     Diagonal x200,y84 → x336,y132. Open space only. ✓ -->
+            <line x1="200" y1="84" x2="336" y2="132" stroke="#1B8C5E" stroke-width="1.3" marker-end="url(#ag)" />
+            <text x="208" y="114" font-size="8.5" fill="#1B8C5E">REST calls (JWT)</text>
+
+            <!-- Flask API → WebSocket Client  (WS updates)
+     Diagonal x680,y148 → x768,y84. Open space. ✓ -->
+            <line x1="680" y1="148" x2="768" y2="84" stroke="#1B8C5E" stroke-width="1.3" marker-end="url(#ag)" />
+            <text x="694" y="124" font-size="8.5" fill="#1B8C5E">WS updates</text>
+
+            <!-- WS Emitter → WebSocket Client  (live push, dashed)
+     x=808,y222 → UP y=18 (above all sections) → LEFT x=800 → DOWN y=30 (WSClient top)
+     x=808 col y18→y222: no box at x808 above layer3 ✓
+     y=18 row: above everything ✓ -->
+            <path d="M 808 222 L 808 18 L 800 18 L 800 30" fill="none" stroke="#1B8C5E" stroke-width="1.1"
+                stroke-dasharray="5 3" marker-end="url(#ag)" />
+            <text x="814" y="124" font-size="8.5" fill="#1B8C5E">live push</text>
+
+            <!-- Fetcher → Scanner  (raw data, short)
+     x152,y374 → x192,y380. ✓ -->
+            <line x1="152" y1="374" x2="192" y2="380" stroke="#1B8C5E" stroke-width="1.2" marker-end="url(#ag)" />
+            <text x="153" y="370" font-size="8.5" fill="#1B8C5E">raw data</text>
+
+            <!-- Fetcher → Report Generator  (raw data, left gutter x=7)
+     x=22,y380 → LEFT x=7 → DOWN y=588 → RIGHT x=22 (ReportGen left)
+     x=7 col y380→y588: x7 < x22 (leftmost box), fully clear ✓
+     No other line at x=7 in this y range ✓ -->
+            <path d="M 22 380 L 7 380 L 7 588 L 22 588" fill="none" stroke="#1B8C5E" stroke-width="1.1"
+                marker-end="url(#ag)" />
+            <text x="9" y="492" font-size="8" fill="#1B8C5E" writing-mode="tb-rl" text-anchor="middle">raw data</text>
+
+            <!-- Scanner → Triage Engine  (short horizontal)
+     x316,y384 → x344,y384. ✓ -->
+            <line x1="316" y1="384" x2="344" y2="384" stroke="#1B8C5E" stroke-width="1.2" marker-end="url(#ag)" />
+
+            <!-- Triage Engine → Severity Classifier
+     x413,y406 → DOWN y=420 → LEFT x=317 → DOWN y=434
+     y=420 row: between Triage bottom(406) and Severity top(434), no box ✓ -->
+            <path d="M 413 406 L 413 420 L 317 420 L 317 434" fill="none" stroke="#1B8C5E" stroke-width="1.1"
+                marker-end="url(#ag)" />
+
+            <!-- Severity Classifier → Report Generator  (vulnerabilities)
+     x232,y456 → LEFT x=175 → DOWN y=540 → LEFT x=7 → DOWN y=570 → RIGHT x=22
+     x=175: gap between Fetcher(right=152) and Scanner(left=192) ✓
+     x=175 col y456→y540: above ReportGen(y548) ✓
+     x=7 col y540→y570: same col as raw-data green, but raw-data ends y=588 and this
+       segment is y540→y570 — OVERLAP on x=7!
+     Fix: use x=175 all the way, then enter ReportGen from top-right area.
+     x175,y456 → DOWN y=544 (just above ReportGen top=548) → LEFT x=172 → DOWN y=570 → LEFT x=170
+     x=172: just right of ReportGen right edge(170) ✓
+     x=175 col y456→y544: ReportGen x22-170 → x175 > 170 ✓, Scanner x192-316 → x175 < 192 ✓ -->
+            <path d="M 232 456 L 175 456 L 175 544 L 172 544 L 172 570 L 170 570" fill="none" stroke="#1B8C5E"
+                stroke-width="1.1" marker-end="url(#ag)" />
+            <text x="178" y="506" font-size="8.5" fill="#1B8C5E">vulnerabilities</text>
+
+            <!-- Severity Classifier → Prompt Builder  (repair suggestions)
+     x317,y478 → DOWN y=530 → RIGHT x=552 → UP y=406 → RIGHT x=566 (PromptBld left)
+     x=552: right of VulnGroup(right=520), left of PromptBld(left=566) ✓
+     y=530 row x317→x552: below Severity(478), above ReportGen(548) ✓
+     x=552 col y530→y406: PatchPrep x630→x552<630 ✓, no box at x552 in this range ✓ -->
+            <path d="M 317 478 L 317 530 L 552 530 L 552 406 L 566 406" fill="none" stroke="#1B8C5E" stroke-width="1.1"
+                marker-end="url(#ag)" />
+            <text x="370" y="526" font-size="8.5" fill="#1B8C5E">repair suggestions</text>
+
+            <!-- Prompt Builder → Patch Preparer
+     x640,y406 → DOWN y=420 → RIGHT x=710 → DOWN y=434
+     y=420 row: gap between PromptBld bottom(406) and PatchPrep top(434) ✓ -->
+            <path d="M 640 406 L 640 420 L 710 420 L 710 434" fill="none" stroke="#1B8C5E" stroke-width="1.1"
+                marker-end="url(#ag)" />
+
+            <!-- Suggestion Proc → Patch Preparer  (dashed)
+     x846,y406 → DOWN y=422 → LEFT x=790 → DOWN y=434
+     y=422 row: gap between SuggProc bottom(406) and PatchPrep top(434) ✓ -->
+            <path d="M 846 406 L 846 422 L 790 422 L 790 434" fill="none" stroke="#1B8C5E" stroke-width="1"
+                stroke-dasharray="4 2" />
+
+            <!-- Report Generator → GitHub  (fetch project info)
+     Exit ReportGen left x=22,y600 → LEFT x=7 → DOWN y=880 → RIGHT x=455 → DOWN y=912
+     x=7 col y600→y880:
+       raw data (green) at x=7 runs y380→y588. This segment starts y=600. Gap=12px. ✓
+       No other line at x=7 in y600→y880 range ✓
+     y=880 row x7→x455: below all boxes ✓
+     x=455 col y880→y912: GitHub top=912, arrives at box top ✓ -->
+            <path d="M 22 600 L 7 600 L 7 880 L 455 880 L 455 912" fill="none" stroke="#1B8C5E" stroke-width="1"
+                marker-end="url(#ag)" />
+            <text x="330" y="877" font-size="8.5" fill="#1B8C5E">fetch project info</text>
+
+            <!-- ─────────────────────────────
+     ORANGE (dashed): ASYNC / SCHEDULED
+───────────────────────────── -->
+
+            <!-- Redis 7 → Celery 5  (broker, short horizontal)
+     x170,y258 → x200,y258. ✓ -->
+            <line x1="170" y1="258" x2="200" y2="258" stroke="#B86800" stroke-width="1.2" marker-end="url(#ao)" />
+            <text x="171" y="252" font-size="8.5" fill="#7A5500">broker</text>
+
+            <!-- Celery 5 → Worker Pool  (short horizontal)
+     x338,y258 → x372,y258. ✓ -->
+            <line x1="338" y1="258" x2="372" y2="258" stroke="#B86800" stroke-width="1.2" marker-end="url(#ao)" />
+
+            <!-- Celery Beat → Celery 5  (scheduled tasks)
+     x635,y222 → UP y=210 → LEFT x=269 → DOWN y=222
+     y=210 row: above layer3 boxes(y222), below layer3 bg top(y202) — open gap ✓ -->
+            <path d="M 635 222 L 635 210 L 269 210 L 269 222" fill="none" stroke="#B86800" stroke-width="1"
+                stroke-dasharray="4 2" marker-end="url(#ao)" />
+            <text x="370" y="207" font-size="8.5" fill="#7A5500">scheduled tasks</text>
+
+            <!-- Worker Pool → Celery Beat  (repair task, short horizontal)
+     x532,y252 → x566,y252. ✓ -->
+            <line x1="532" y1="252" x2="566" y2="252" stroke="#B86800" stroke-width="1" stroke-dasharray="4 2"
+                marker-end="url(#ao)" />
+            <text x="534" y="247" font-size="8.5" fill="#7A5500">repair task</text>
+
+            <!-- Worker Pool → Fetcher  (scan task)
+     x420,y222 → UP y=192 → LEFT x=15 → DOWN y=348 → RIGHT x=40 (into Fetcher)
+     y=192 row: open gap above layer3 boxes(y222) ✓
+     x=15 col y192→y348: x15 < x22 (leftmost box), clear ✓
+     Only orange at x=15 in this y range ✓ -->
+            <path d="M 420 222 L 420 192 L 15 192 L 15 348 L 40 348" fill="none" stroke="#B86800" stroke-width="1"
+                stroke-dasharray="4 2" marker-end="url(#ao)" />
+            <text x="60" y="190" font-size="8.5" fill="#7A5500">scan task</text>
+
+            <!-- Worker Pool → Report Generator  (report task)
+     x390,y222 → UP y=196 → LEFT x=3 → DOWN y=610 → RIGHT x=22 (ReportGen left, bottom area)
+     y=196 row: 4px below y=192 (scan task horizontal), distinct level ✓
+     x=3 col y196→y610: x3 < x7 < x15 < x22, no box at x=3, ONLY this orange line here ✓ -->
+            <path d="M 390 222 L 390 196 L 3 196 L 3 610 L 22 610" fill="none" stroke="#B86800" stroke-width="1"
+                stroke-dasharray="4 2" marker-end="url(#ao)" />
+            <text x="28" y="654" font-size="8.5" fill="#7A5500">report task</text>
+
+            <!-- ─────────────────────────────
+     BLUE: API DISPATCH
+───────────────────────────── -->
+
+            <!-- Flask API → Celery 5  (task dispatch)
+     Diagonal x390,y176 → x290,y222. Open space. ✓ -->
+            <line x1="390" y1="176" x2="290" y2="222" stroke="#2563EB" stroke-width="1.3" marker-end="url(#ab)" />
+            <text x="302" y="205" font-size="8.5" fill="#2563EB">task dispatch</text>
+
+            <!-- Prompt Builder → Gemini API  (structured prompts)
+     x566,y384 → LEFT x=548 → DOWN y=640 → RIGHT x=500 → DOWN y=698 (Gemini top)
+     x=548 col y384→y640:
+       PromptBld left=566 → x548<566 ✓
+       PatchPrep left=630 → x548<630 ✓
+       ReportGen right=170 → x548>170 ✓
+     y=640 row x548→x500: below all proc boxes, above AI ✓
+     Blue "scan results" uses y=640 from x=15→x=185. This uses x500→x548. No overlap (different x ranges) ✓
+     x=500 col y640→y698: Gemini cx=500, arrives at top ✓ -->
+            <path d="M 566 384 L 548 384 L 548 640 L 500 640 L 500 698" fill="none" stroke="#2563EB" stroke-width="1.1"
+                marker-end="url(#ab)" />
+            <text x="420" y="636" font-size="8.5" fill="#2563EB">structured prompts</text>
+
+            <!-- Fetcher → Groq API  (scan results, dashed)
+     x87,y412 → LEFT x=15 → DOWN y=640 → RIGHT x=185 → DOWN y=698 (Groq top)
+     x=15 col y412→y640:
+       Fetcher bottom=412 → starts exactly at bottom edge ✓
+       ReportGen x22-170 → x15 < 22, clear ✓
+       Orange scan task uses x=15 only y192→y348. Gap y348→y412 then this starts y412. ✓
+     y=640 row x15→x185: blue "structured prompts" uses y640 from x500→x548. No overlap ✓
+     x=185 col y640→y698: Groq cx=185, arrives at top ✓ -->
+            <path d="M 87 412 L 15 412 L 15 640 L 185 640 L 185 698" fill="none" stroke="#2563EB" stroke-width="1"
+                stroke-dasharray="4 2" marker-end="url(#ab)" />
+            <text x="20" y="568" font-size="8.5" fill="#2563EB">scan results</text>
+
+            <!-- Patch Preparer → Report Generator  (patches + suggestions)
+     x630,y456 → LEFT x=540 → DOWN y=542 → LEFT x=172 → DOWN y=578 → LEFT x=170
+     x=540: right of VulnGroup(right=520), left of PromptBld(left=566) ✓
+     x=540 col y456→y542: clear of all boxes in range ✓
+     y=542 row x540→x172: above ReportGen top(548) ✓
+     x=172 col y542→y578: right of ReportGen right(170) by 2px ✓ -->
+            <path d="M 630 456 L 540 456 L 540 542 L 172 542 L 172 578 L 170 578" fill="none" stroke="#2563EB"
+                stroke-width="1.1" marker-end="url(#ab)" />
+            <text x="270" y="538" font-size="8.5" fill="#2563EB">patches + suggestions</text>
+
+            <!-- Report Generator → S3  (PDF reports)
+     Exit ReportGen right edge x=170,y=578 → RIGHT x=657 → DOWN y=778 → RIGHT x=720 → DOWN y=806
+     x=657: gap between Gemini right(640) and Claude left(675) ✓
+     y=578 row x170→x657:
+       PatchPrep x630-790, y434-478 → y578 > 478, below PatchPrep ✓
+       SuggProc x748-944, y362-406 → y578 > 406 ✓
+       Exits ReportGen at its right edge x=170 ✓
+     x=657 col y578→y778:
+       Claude left=675 → x657 < 675 ✓
+       Gemini right=640 → x657 > 640 ✓
+       Groq right=325 → x657 > 325 ✓
+       ONLY blue "PDF reports" at x=657 ✓
+     y=778 row x657→x720: light-blue "storage write" uses y778 from x185→x210. No overlap ✓
+     x=720 col y778→y806: S3 x580-860, arrives at top ✓ -->
+            <path d="M 170 578 L 657 578 L 657 778 L 720 778 L 720 806" fill="none" stroke="#2563EB" stroke-width="1.1"
+                marker-end="url(#ab)" />
+            <text x="310" y="574" font-size="8.5" fill="#2563EB">PDF reports</text>
+
+            <!-- ─────────────────────────────
+     LIGHT BLUE: STORAGE WRITE
+───────────────────────────── -->
+
+            <!-- Groq API → MongoDB  (storage write)
+     x185,y756 → DOWN y=778 → RIGHT x=210 → DOWN y=806
+     y=778 row x185→x210: blue "PDF reports" uses y778 x657→x720. No overlap (diff x range) ✓
+     x=210 col y778→y806: MongoDB cx=210, arrives at top ✓ -->
+            <path d="M 185 756 L 185 778 L 210 778 L 210 806" fill="none" stroke="#1D7FB8" stroke-width="1.1"
+                marker-end="url(#alb)" />
+
+            <!-- ─────────────────────────────
+     RED: LLM CALLS
+───────────────────────────── -->
+
+            <!-- Patch Preparer → Report Generator  (remediation suggestion)
+     x710,y478 → DOWN y=520 → LEFT x=185 → DOWN y=560 → LEFT x=170
+     y=520 row x710→x185:
+       SeverityCls x232-402, y434-478 → y520 > 478 ✓
+       ReportGen x22-170, y548-628 → y520 < 548 ✓
+       "repair suggestions" green uses y530 from x317→x552. y520 ≠ y530. ✓ (4px apart, different lines)
+       "patches+suggestions" blue uses y542 from x540→x172. y520 ≠ y542. ✓
+     x=185 col y520→y560: right of ReportGen right(170) ✓ -->
+            <path d="M 710 478 L 710 520 L 185 520 L 185 560 L 170 560" fill="none" stroke="#B91C1C" stroke-width="1.3"
+                marker-end="url(#ar)" />
+            <text x="380" y="516" font-size="8.5" fill="#B91C1C">remediation suggestion</text>
+
+            <!-- ══════════════════════════════
+     LEGEND
+══════════════════════════════ -->
+            <rect x="10" y="988" width="980" height="62" rx="8" fill="#FAFAFA" stroke="#DDD" stroke-width="1" />
+            <text x="500" y="1006" text-anchor="middle" font-size="9" font-weight="700" fill="#333"
+                letter-spacing="0.9">LEGEND</text>
+
+            <line x1="34" y1="1032" x2="80" y2="1032" stroke="#1B8C5E" stroke-width="1.5" marker-end="url(#ag)" />
+            <text x="86" y="1036" font-size="9.5" fill="#1B8C5E">WS / REST</text>
+
+            <line x1="192" y1="1032" x2="238" y2="1032" stroke="#2563EB" stroke-width="1.5" marker-end="url(#ab)" />
+            <text x="244" y="1036" font-size="9.5" fill="#2563EB">API dispatch</text>
+
+            <line x1="382" y1="1032" x2="428" y2="1032" stroke="#B86800" stroke-width="1.5" stroke-dasharray="5 3"
+                marker-end="url(#ao)" />
+            <text x="434" y="1036" font-size="9.5" fill="#7A5500">Async / scheduled</text>
+
+            <line x1="610" y1="1032" x2="656" y2="1032" stroke="#B91C1C" stroke-width="1.5" marker-end="url(#ar)" />
+            <text x="662" y="1036" font-size="9.5" fill="#B91C1C">LLM calls</text>
+
+            <line x1="762" y1="1032" x2="808" y2="1032" stroke="#1D7FB8" stroke-width="1.5" marker-end="url(#alb)" />
+            <text x="814" y="1036" font-size="9.5" fill="#1D7FB8">Storage write</text>
+
+        </svg>
+    </div>
+</body>
+
+</html>

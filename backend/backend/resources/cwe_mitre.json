@@ -1,0 +1,122 @@
+[
+  {
+    "cwe_id": "CWE-89",
+    "name": "SQL Injection",
+    "description": "Improper neutralization of special elements used in an SQL Command.",
+    "remediation": "Use parameterized queries, prepared statements, and validate inputs against a whitelist.",
+    "risk": "Critical: Can lead to full database compromise and data exfiltration.",
+    "severity": "Critical"
+  },
+  {
+    "cwe_id": "CWE-79",
+    "name": "Cross-site Scripting (XSS)",
+    "description": "Improper neutralization of input during web page generation.",
+    "remediation": "Use context-aware output encoding, Content Security Policy (CSP), and sanitize HTML inputs.",
+    "risk": "High: Can lead to session hijacking, defacement, and malware distribution.",
+    "severity": "High"
+  },
+  {
+    "cwe_id": "CWE-327",
+    "name": "Use of a Broken or Risky Cryptographic Algorithm",
+    "description": "The use of a risky or broken cryptographic algorithm can leave data vulnerable to decryption.",
+    "remediation": "Replace legacy algorithms like MD5/SHA1 with modern standards like SHA256, AES-GCM, or Argon2.",
+    "risk": "High: Data confidentiality and integrity are at risk.",
+    "severity": "High"
+  },
+  {
+    "cwe_id": "CWE-287",
+    "name": "Improper Authentication",
+    "description": "Insufficient proof of identity claim validation.",
+    "remediation": "Implement multi-factor authentication, secure session management, and robust password hashing.",
+    "risk": "Critical: Unauthorized access to user accounts.",
+    "severity": "Critical"
+  },
+  {
+    "cwe_id": "CWE-22",
+    "name": "Path Traversal",
+    "description": "External input used to construct paths to restricted parent directories.",
+    "remediation": "Validate input paths, use whitelists, and canonicalize path names.",
+    "risk": "High: Can lead to arbitrary file access.",
+    "severity": "High"
+  },
+  {
+    "cwe_id": "CWE-20",
+    "name": "Improper Input Validation",
+    "description": "The product does not validate or incorrectly validates input that can affect the control flow or data flow of a program.",
+    "remediation": "Implement strict input validation using allowlists and strongly typed inputs.",
+    "risk": "Medium: Can bypass security checks or cause application crashes.",
+    "severity": "Medium"
+  },
+  {
+    "cwe_id": "CWE-200",
+    "name": "Exposure of Sensitive Information",
+    "description": "Unauthorized exposure of sensitive information (e.g., credentials, PII, system details).",
+    "remediation": "Ensure data is encrypted in transit/at rest and apply strict access control.",
+    "risk": "Medium: Can lead to further targeted attacks or identity theft.",
+    "severity": "Medium"
+  },
+  {
+    "cwe_id": "CWE-352",
+    "name": "Cross-Site Request Forgery (CSRF)",
+    "description": "A web application does not verify a request was intentionally sent by the user.",
+    "remediation": "Implement anti-CSRF tokens for stay-changing operations and use SameSite cookie attributes.",
+    "risk": "High: Can perform actions on behalf of authenticated users.",
+    "severity": "High"
+  },
+  {
+    "cwe_id": "CWE-502",
+    "name": "Deserialization of Untrusted Data",
+    "description": "Untrusted data is deserialized without sufficient safety checks.",
+    "remediation": "Avoid deserializing untrusted data; use safer formats like JSON instead of language-specific serialization.",
+    "risk": "Critical: Can lead to arbitrary code execution (ACE).",
+    "severity": "Critical"
+  },
+  {
+    "cwe_id": "CWE-601",
+    "name": "Open Redirect",
+    "description": "URL redirection to an untrusted site can be used for phishing attacks.",
+    "remediation": "Avoid user-controlled redirect targets or validate against a whitelist of safe URLs.",
+    "risk": "Low: Primarily used for phishing and social engineering.",
+    "severity": "Low"
+  },
+  {
+    "cwe_id": "CWE-798",
+    "name": "Hard-coded Credentials",
+    "description": "The use of hard-coded credentials (passwords, API keys) in source code.",
+    "remediation": "Use environment variables or secure vault services to manage secrets.",
+    "risk": "Critical: Exposed secrets can lead to full system compromise.",
+    "severity": "Critical"
+  },
+  {
+    "cwe_id": "CWE-94",
+    "name": "Code Injection",
+    "description": "Improper control of generation of code allowed by external input.",
+    "remediation": "Avoid dynamic code execution (eval, exec); use safer alternatives.",
+    "risk": "Critical: Full remote code execution (RCE) capability.",
+    "severity": "Critical"
+  },
+  {
+    "cwe_id": "CWE-611",
+    "name": "XXE (XML External Entity)",
+    "description": "Improper restriction of XML external entity references.",
+    "remediation": "Disable DTD processing and external entity resolution in XML parsers.",
+    "risk": "High: Can lead to file disclosure, SSRF, or DoS.",
+    "severity": "High"
+  },
+  {
+    "cwe_id": "CWE-434",
+    "name": "Unrestricted File Upload",
+    "description": "Uploading files without checking extensions or content.",
+    "remediation": "Rename uploaded files, check extensions against a whitelist, and scan for malware.",
+    "risk": "High: Can lead to RCE via web shells.",
+    "severity": "High"
+  },
+  {
+    "cwe_id": "CWE-250",
+    "name": "Execution with Unnecessary Privileges",
+    "description": "Running software with more permissions than required.",
+    "remediation": "Follow the principle of least privilege; drop privileges after initialization.",
+    "risk": "Medium: Exploit impact is amplified due to high privileges.",
+    "severity": "Medium"
+  }
+]

@@ -1,0 +1,19 @@
+
+https://github.com/OWASP/NodeGoat
+
+https://github.com/fportantier/vulpy
+
+https://github.com/digininja/DVWA
+
+
+
+# OPENAI_API_KEY=your_openai_api_key_here
+
+
+Upgraded Analysis Pipeline: Implemented a Chain-of-Thought (CoT) reasoning protocol in the deep analysis stage. Gemini now performs a structured "ANALYZE-TRACE-VERIFY-CRITIQUE" loop to minimize false negatives and confirm the absence of sanitizers.
+
+
+backend start
+1.netstat -ano | findstr :5000
+2.taskkill /F /PID 2300
+3..\backend\venv\Scripts\python.exe backend\server.py
